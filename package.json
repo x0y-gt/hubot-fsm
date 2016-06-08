@@ -1,0 +1,24 @@
+{
+  "name": "hubot-fsm",
+  "version": "0.1.0",
+  "description": "A package to define a state machine in hubot, defining listeners per state",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/x0y-gt/hubot-fsm.git"
+  },
+  "keywords": [
+    "hubot",
+    "bot",
+    "fsm"
+  ],
+  "author": "x0y <x0y@milkyweb.co>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/x0y-gt/hubot-fsm/issues"
+  },
+  "homepage": "https://github.com/x0y-gt/hubot-fsm#readme"
+}
