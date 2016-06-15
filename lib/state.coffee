@@ -1,4 +1,4 @@
-{Listener,TextListener,CatchAllMessage,Response} = require 'hubot'
+{Listener,TextListener,CatchAllMessage,Response,TextMessage} = require 'hubot'
 Async = require 'async'
 
 class State
@@ -10,6 +10,9 @@ class State
       context = {response: res}
       @processListeners context
     ).bind(@)
+
+  next: (userId, state) ->
+    @robot._fsm.setNext userId, state
 
   listen: (matcher, options, callback) ->
     @listeners.push new Listener(@robot, matcher, options, callback)
@@ -28,7 +31,9 @@ class State
       @listeners,
       (listener, cb) =>
         try
-          listener.call context.response.message, (listenerExecuted) ->
+          # Chapus para probar local, porque TextMessage(repo local) es diferente a TextMessage(repo del app que use esta librería)
+          message = new TextMessage context.response.message.user, context.response.message.text, context.response.message.id
+          listener.call message, (listenerExecuted) ->
             cb listenerExecuted
         catch err
           @robot.emit('error', err, new Response(@robot, context.response.message, []))
