@@ -31,7 +31,7 @@ class State
       @listeners,
       (listener, cb) =>
         try
-          # Chapus para probar local, porque TextMessage(repo local) es diferente a TextMessage(repo del app que use esta librería)
+          # Hack to work when testing in local, because "listener.call" verifies if TextMessage(local repo) is the same as TextMessage(app using this lib)
           message = new TextMessage context.response.message.user, context.response.message.text, context.response.message.id
           listener.call message, (listenerExecuted) ->
             cb listenerExecuted
@@ -42,7 +42,7 @@ class State
       ,
       (result) =>
         # If no registered Listener matched the message
-        if result == null
+        if !result or result == null
           @catchAllCallback.call @robot, context.response
     )
     return undefined

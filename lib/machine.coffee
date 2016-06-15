@@ -7,7 +7,6 @@ class Context
     state:
       get: -> @context.state
       set: (value) ->
-        console.log 'next state: ' + value
         @context.state = value
         @brain.set @userId, @context
 
