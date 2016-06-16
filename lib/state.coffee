@@ -1,4 +1,4 @@
-{Listener,TextListener,CatchAllMessage,Response} = require 'hubot'
+{Listener,TextListener,CatchAllMessage,Response,TextMessage} = require 'hubot'
 Async = require 'async'
 
 class State
@@ -10,6 +10,11 @@ class State
       context = {response: res}
       @processListeners context
     ).bind(@)
+
+  # user: Hubot user obj
+  # state: string next state name
+  next: (user, state) ->
+    @robot._fsm.setNext user.id, state
 
   listen: (matcher, options, callback) ->
     @listeners.push new Listener(@robot, matcher, options, callback)
@@ -28,7 +33,9 @@ class State
       @listeners,
       (listener, cb) =>
         try
-          listener.call context.response.message, (listenerExecuted) ->
+          # Hack to work when testing in local, because "listener.call" verifies if TextMessage(local repo) is the same as TextMessage(app using this lib)
+          message = new TextMessage context.response.message.user, context.response.message.text, context.response.message.id
+          listener.call message, (listenerExecuted) ->
             cb listenerExecuted
         catch err
           @robot.emit('error', err, new Response(@robot, context.response.message, []))
@@ -37,7 +44,7 @@ class State
       ,
       (result) =>
         # If no registered Listener matched the message
-        if result == null
+        if !result or result == null
           @catchAllCallback.call @robot, context.response
     )
     return undefined

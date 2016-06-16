@@ -6,6 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "dependencies": {
+    "hubot": "^2.19.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/x0y-gt/hubot-fsm.git"

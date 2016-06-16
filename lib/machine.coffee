@@ -1,13 +1,11 @@
+User = require './user'
 
 class stateMachine
-
   constructor: (@robot) ->
     @states = []
+    @users = {}
     @defaultState = null
-    @defaultContext = {
-      state: null
-    }
-    @robot.stateMachine = @
+    @robot._fsm = @
 
   setDefault: (@defaultState) ->
     @robot.logger.debug "Setting default state to #{@defaultState}"
@@ -24,14 +22,25 @@ class stateMachine
     @robot.logger.debug "Registering state #{state}"
     @states.push state
 
+  setNext: (userId, state) ->
+    user = @getUser userId
+    user.state = state
+
+  setUser: (userId) ->
+    @users[userId] = new User @robot.brain, userId
+    return @users[userId]
+
+  getUser: (userId) ->
+    if @users[userId]
+      return @users[userId]
+    else
+      return @setUser userId
+
   dispatch: (res) ->
-    # context = @robot.brain.get(res.envelope.user.id)
-    # if !context
-      # context = @defaultContext
-      # context.state = @getDefault()
+    user = @getUser res.envelope.user.id
+    if user.state == null
+      user.state = @getDefault()
 
-    # @robot.emit context.state, res
-    @robot.emit @getDefault(), res
-
+    @robot.emit user.state, res
 
 module.exports = stateMachine
