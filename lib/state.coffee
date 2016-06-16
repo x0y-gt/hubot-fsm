@@ -11,8 +11,10 @@ class State
       @processListeners context
     ).bind(@)
 
-  next: (userId, state) ->
-    @robot._fsm.setNext userId, state
+  # user: Hubot user obj
+  # state: string next state name
+  next: (user, state) ->
+    @robot._fsm.setNext user.id, state
 
   listen: (matcher, options, callback) ->
     @listeners.push new Listener(@robot, matcher, options, callback)
