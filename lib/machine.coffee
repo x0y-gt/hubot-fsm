@@ -1,16 +1,4 @@
-class Context
-  constructor: (@brain, @userId) ->
-    @context = {
-      state: null
-    }
-  Object.defineProperties @prototype,
-    state:
-      get: -> @context.state
-      set: (value) ->
-        console.log 'next state: ' + value
-        @context.state = value
-        @brain.set @userId, @context
-
+User = require './user'
 
 class stateMachine
   constructor: (@robot) ->
@@ -39,7 +27,7 @@ class stateMachine
     user.state = state
 
   setUser: (userId) ->
-    @users[userId] = new Context @robot.brain, userId
+    @users[userId] = new User @robot.brain, userId
     return @users[userId]
 
   getUser: (userId) ->
