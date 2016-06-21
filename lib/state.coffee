@@ -11,6 +11,16 @@ class State
       @processListeners context
     ).bind(@)
 
+  # callback = func with params: response, payload
+  on: (event, callback) ->
+    @robot.on event, ((envelope) ->
+      state = @robot._fsm.getState envelope.user.id
+      # if the user is currently in this state then execute event callback
+      if state == @stateName
+        res = new Response @robot, envelope, undefined
+        callback.call @, res, envelope.payload
+    ).bind @
+
   # user: Hubot user obj
   # state: string next state name
   next: (user, state) ->
