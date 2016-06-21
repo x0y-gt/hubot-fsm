@@ -26,8 +26,13 @@ class stateMachine
     user = @getUser userId
     user.state = state
 
+  getState: (userId) ->
+    user = @getUser userId
+    return user.state
+
   setUser: (userId) ->
     @users[userId] = new User @robot.brain, userId
+    @users[userId].state = @getDefault()
     return @users[userId]
 
   getUser: (userId) ->
@@ -38,9 +43,6 @@ class stateMachine
 
   dispatch: (res) ->
     user = @getUser res.envelope.user.id
-    if user.state == null
-      user.state = @getDefault()
-
     @robot.emit user.state, res
 
 module.exports = stateMachine
