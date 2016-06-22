@@ -3,20 +3,38 @@ Async = require 'async'
 
 class State
 
-  constructor: (@robot, @stateName) ->
+  constructor: (@robot, @name) ->
     @listeners        = []
     @catchAllCallback = null
-    @robot.on @stateName, ((res) ->
+    @onEnterCb        = null
+    @onExitCb         = null
+
+    @robot.on @name, ((res) ->
       context = {response: res}
       @processListeners context
     ).bind(@)
+
+    @robot._fsm.addState @
+
+  _onEnter: (callback) ->
+    if typeof callback == 'function'
+      @onEnterCb = callback
+    else
+      @robot.logger.error 'onEnter parameter is not a function'
+
+  # TODO
+  _onExit: (callback) ->
+    if typeof callback == 'function'
+      @onExitCb = callback
+    else
+      @robot.logger.error 'onExit parameter is not a function'
 
   # callback = func with params: response, payload
   on: (event, callback) ->
     @robot.on event, ((envelope) ->
       state = @robot._fsm.getState envelope.user.id
       # if the user is currently in this state then execute event callback
-      if state == @stateName
+      if state == @name
         res = new Response @robot, envelope, undefined
         callback.call @, res, envelope.payload
     ).bind @
@@ -24,7 +42,8 @@ class State
   # user: Hubot user obj
   # state: string next state name
   next: (user, state) ->
-    @robot._fsm.setNext user.id, state
+    extraArgs = Array.prototype.slice.call(arguments).slice 2
+    @robot._fsm.setNext user, state, extraArgs
 
   listen: (matcher, options, callback) ->
     @listeners.push new Listener(@robot, matcher, options, callback)
@@ -36,7 +55,7 @@ class State
     if typeof callback == 'function'
       @catchAllCallback = callback
     else
-      @robot.logger.error "Parameter passed to catchAll is not a function in state #{@stateName}"
+      @robot.logger.error "Parameter passed to catchAll is not a function in state #{@name}"
 
   processListeners: (context, done) ->
     Async.detectSeries(
