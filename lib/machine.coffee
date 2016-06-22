@@ -2,10 +2,10 @@ User = require './user'
 
 class stateMachine
   constructor: (@robot) ->
-    @states = []
-    @users = {}
+    @states       = {}
+    @users        = {}
     @defaultState = null
-    @robot._fsm = @
+    @robot._fsm   = @
 
   setDefault: (@defaultState) ->
     @robot.logger.debug "Setting default state to #{@defaultState}"
@@ -13,18 +13,24 @@ class stateMachine
   getDefault: () ->
     if @defaultState
       @defaultState
-    else if @states[0]
-      @states[0]
     else
       @robot.logger.error 'Default state not defined'
+      process.exit 1
 
-  registerState: (state) ->
-    @robot.logger.debug "Registering state #{state}"
-    @states.push state
+  addState: (state) ->
+    @robot.logger.debug "Registering state #{state.name}"
+    @states[state.name] = state
 
-  setNext: (userId, state) ->
-    user = @getUser userId
-    user.state = state
+  setNext: (user, stateName, args=[]) ->
+    user = @getUser user.Id
+
+    # call onEnter if defined
+    if @states[stateName] && typeof @states[stateName].onEnterCb == 'function'
+      @robot.logger.debug "Calling onEnter for state #{stateName}"
+      args.unshift user
+      @states[stateName].onEnterCb.apply @states[stateName], args
+
+    user.state = stateName
 
   getState: (userId) ->
     user = @getUser userId
