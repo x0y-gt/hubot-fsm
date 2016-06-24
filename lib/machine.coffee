@@ -22,7 +22,7 @@ class stateMachine
     @states[state.name] = state
 
   setNext: (user, stateName, args=[]) ->
-    user = @getUser user.Id
+    user = @getUser user.id
 
     # call onEnter if defined
     if @states[stateName] && typeof @states[stateName].onEnterCb == 'function'
