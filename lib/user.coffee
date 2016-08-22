@@ -9,5 +9,10 @@ class User
       set: (value) ->
         @context.state = value
         @brain.set @userId, @context
+    catchAllCounter:
+      get: -> @context.catchAllCounter
+      set: (value) ->
+        @context.catchAllCounter = value
+        @brain.set @userId, @context
 
 module.exports = User

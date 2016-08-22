@@ -1,6 +1,6 @@
 {
   "name": "hubot-fsm",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "A package to define a state machine in hubot, defining listeners per state",
   "main": "index.js",
   "scripts": {
