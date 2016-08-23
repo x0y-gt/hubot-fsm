@@ -23,6 +23,8 @@ class stateMachine
 
   setNext: (user, stateName, args=[]) ->
     user = @getUser user.id
+    # Resetting catchAllCounter
+    user.catchAllCounter = 0
 
     # call onEnter if defined
     if @states[stateName] && typeof @states[stateName].onEnterCb == 'function'
