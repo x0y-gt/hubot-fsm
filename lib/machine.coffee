@@ -43,6 +43,8 @@ class stateMachine
     return new Promise (resolve, reject) ->
       self.getUser(userId).then (user) ->
         resolve user.state
+      .catch (error) ->
+        reject error
 
   setUser: (userId) ->
     @users[userId] = new User @robot.brain, userId
@@ -60,6 +62,8 @@ class stateMachine
           user.state = data['state'] if data && data['state']
           self.users[userId] = user
           resolve user
+        .catch (error) ->
+          reject error
 
   dispatch: (res) ->
     self = @
