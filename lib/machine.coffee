@@ -1,4 +1,5 @@
 User = require './user'
+Promise = require 'bluebird'
 
 class stateMachine
   constructor: (@robot) ->
@@ -35,8 +36,8 @@ class stateMachine
         self.states[stateName].onEnterCb.apply self.states[stateName], args
 
       user.state = stateName
-    .catch (err) ->
-      self.robot.logger.debug 'Error: ', err
+    .catch (error) ->
+      self.robot.logger.debug 'Error: ', error
 
   getState: (userId) ->
     self = @
@@ -69,7 +70,7 @@ class stateMachine
     self = @
     @getUser(res.envelope.user.id).then (user) ->
       self.robot.emit user.state, res
-    .catch (err) ->
-      self.robot.logger.debug 'Error: ', err
+    .catch (error) ->
+      self.robot.logger.debug 'Error: ', error
 
 module.exports = stateMachine
