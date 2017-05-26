@@ -94,7 +94,7 @@ class State
                 return 0
               else
                 self.robot.logger.info 'Catchall executed twice; No HELP cb defined'
-            self.catchAllCallback.call self.robot, context.response
+            self.catchAllCallback.call self.robot, context.response if self.catchAllCallback
       )
       return undefined
 
