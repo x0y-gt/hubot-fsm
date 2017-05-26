@@ -22,21 +22,27 @@ class stateMachine
     @states[state.name] = state
 
   setNext: (user, stateName, args=[]) ->
-    user = @getUser user.id
-    # Resetting catchAllCounter
-    user.catchAllCounter = 0
+    self = @
+    @getUser(user.id).then (user) ->
+      # Resetting catchAllCounter
+      user.catchAllCounter = 0
 
-    # call onEnter if defined
-    if @states[stateName] && typeof @states[stateName].onEnterCb == 'function'
-      @robot.logger.debug "Calling onEnter for state #{stateName}"
-      args.unshift user
-      @states[stateName].onEnterCb.apply @states[stateName], args
+      # call onEnter if defined
+      if self.states[stateName] &&
+      typeof self.states[stateName].onEnterCb == 'function'
+        self.robot.logger.debug "Calling onEnter for state #{stateName}"
+        args.unshift user
+        self.states[stateName].onEnterCb.apply self.states[stateName], args
 
-    user.state = stateName
+      user.state = stateName
+    .catch (err) ->
+      self.robot.logger.debug 'Error: ', err
 
   getState: (userId) ->
-    user = @getUser userId
-    return user.state
+    self = @
+    return new Promise (resolve, reject) ->
+      self.getUser(userId).then (user) ->
+        resolve user.state
 
   setUser: (userId) ->
     @users[userId] = new User @robot.brain, userId
@@ -44,13 +50,22 @@ class stateMachine
     return @users[userId]
 
   getUser: (userId) ->
-    if @users[userId]
-      return @users[userId]
-    else
-      return @setUser userId
+    self = @
+    return new Promise (resolve, reject) ->
+      if self.users[userId]
+        resolve self.users[userId]
+      else
+        user = self.setUser userId
+        self.robot.brain.get(userId).then (data) ->
+          user.state = data['state'] if data && data['state']
+          self.users[userId] = user
+          resolve user
 
   dispatch: (res) ->
-    user = @getUser res.envelope.user.id
-    @robot.emit user.state, res
+    self = @
+    @getUser(res.envelope.user.id).then (user) ->
+      self.robot.emit user.state, res
+    .catch (err) ->
+      self.robot.logger.debug 'Error: ', err
 
 module.exports = stateMachine
