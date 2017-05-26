@@ -26,16 +26,15 @@ class stateMachine
     self = @
     @getUser(user.id).then (user) ->
       # Resetting catchAllCounter
-      user.catchAllCounter = 0
+      user.setCatchAllCounter(0).then (data) ->
+        # call onEnter if defined
+        if self.states[stateName] &&
+        typeof self.states[stateName].onEnterCb == 'function'
+          self.robot.logger.debug "Calling onEnter for state #{stateName}"
+          args.unshift user
+          self.states[stateName].onEnterCb.apply self.states[stateName], args
 
-      # call onEnter if defined
-      if self.states[stateName] &&
-      typeof self.states[stateName].onEnterCb == 'function'
-        self.robot.logger.debug "Calling onEnter for state #{stateName}"
-        args.unshift user
-        self.states[stateName].onEnterCb.apply self.states[stateName], args
-
-      user.state = stateName
+        user.setState stateName
     .catch (error) ->
       self.robot.logger.debug 'Error: ', error
 
@@ -48,9 +47,20 @@ class stateMachine
         reject error
 
   setUser: (userId) ->
-    @users[userId] = new User @robot.brain, userId
-    @users[userId].state = @getDefault()
-    return @users[userId]
+    self = @
+    return new Promise (resolve, reject) ->
+      newUser = new User self.robot.brain, userId
+      self.robot.brain.get(userId).then (data) ->
+        initialState = if data && data['state'] then data['state']
+        else self.getDefault()
+
+        newUser.setState(initialState).then (data) ->
+          self.users[userId] = newUser
+          resolve newUser
+        .catch (error) ->
+          reject error
+      .catch (error) ->
+        reject error
 
   getUser: (userId) ->
     self = @
@@ -58,10 +68,7 @@ class stateMachine
       if self.users[userId]
         resolve self.users[userId]
       else
-        user = self.setUser userId
-        self.robot.brain.get(userId).then (data) ->
-          user.state = data['state'] if data && data['state']
-          self.users[userId] = user
+        self.setUser(userId).then (user) ->
           resolve user
         .catch (error) ->
           reject error

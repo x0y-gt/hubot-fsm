@@ -8,11 +8,17 @@ class User
       get: -> @context.state
       set: (value) ->
         @context.state = value
-        @brain.set @userId, @context
     catchAllCounter:
       get: -> @context.catchAllCounter
       set: (value) ->
         @context.catchAllCounter = value
-        @brain.set @userId, @context
+
+  setState: (newState) ->
+    @context.state = newState
+    @brain.set @userId, @context
+
+  setCatchAllCounter: (counter) ->
+    @context.catchAllCounter = counter
+    @brain.set @userId, @context
 
 module.exports = User

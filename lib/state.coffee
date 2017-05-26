@@ -76,8 +76,10 @@ class State
             message = new TextMessage context.response.message.user, context.response.message.text, context.response.message.id
             listener.call message, (listenerExecuted) ->
               if listenerExecuted
-                user.catchAllCounter = 0
-              cb listenerExecuted
+                user.setCatchAllCounter(0).then (data) ->
+                  cb listenerExecuted
+              else
+                cb listenerExecuted
           catch err
             self.robot.emit('error', err, new Response(self.robot, context.response.message, []))
             # Continue to next listener when there is an error
@@ -86,15 +88,15 @@ class State
         (result) =>
           # If no registered Listener matched the message
           if !result or result == null
-            user.catchAllCounter = if user.catchAllCounter? then user.catchAllCounter + 1 else 1
-            if user.catchAllCounter >= 2
-              if self.onHelpCb
-                self.robot.logger.info 'Catchall executed twice; executing HELP cb'
-                self.onHelpCb.call self.robot, context.response
-                return 0
-              else
-                self.robot.logger.info 'Catchall executed twice; No HELP cb defined'
-            self.catchAllCallback.call self.robot, context.response if self.catchAllCallback
+            user.setCatchAllCounter(if user.catchAllCounter? then user.catchAllCounter + 1 else 1).then (data) ->
+              if user.catchAllCounter >= 2
+                if self.onHelpCb
+                  self.robot.logger.info 'Catchall executed twice; executing HELP cb'
+                  self.onHelpCb.call self.robot, context.response
+                  return 0
+                else
+                  self.robot.logger.info 'Catchall executed twice; No HELP cb defined'
+              self.catchAllCallback.call self.robot, context.response if self.catchAllCallback
       )
       return undefined
 
